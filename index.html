@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ScriptBot — Performance Marketing Script Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0f0e0d;--ink2:#4a4845;--ink3:#8a8784;
+  --paper:#faf9f7;--paper2:#f2f0ec;--paper3:#e8e5e0;
+  --accent:#c84b2f;--accent2:#e8702a;--accent-light:#fdf0eb;
+  --green:#2a7a4b;--green-light:#eaf5ef;
+  --purple:#4a3fbf;--purple-light:#eeedfb;
+  --gold:#c47d0e;--gold-light:#fdf4e0;
+  --border:rgba(15,14,13,0.12);--border2:rgba(15,14,13,0.06);
+  --r:8px;--r2:12px;
+}
+body{font-family:'DM Mono',monospace;background:var(--paper);color:var(--ink);font-size:13px;line-height:1.6;min-height:100vh;}
+
+/* ── Layout ── */
+.app{display:grid;grid-template-columns:210px 1fr;min-height:100vh;}
+.sidebar{background:var(--ink);color:var(--paper);padding:0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+.logo{padding:18px 16px 14px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:10px;}
+.logo-mark{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:#fff;flex-shrink:0;}
+.logo-text{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;letter-spacing:0.02em;}
+.logo-sub{font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:0.06em;}
+.nav-group{padding:14px 8px 4px;}
+.nav-label{font-size:9px;letter-spacing:0.12em;color:rgba(255,255,255,0.28);text-transform:uppercase;padding:0 8px 6px;display:block;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:6px;cursor:pointer;color:rgba(255,255,255,0.5);font-size:12px;transition:all 0.15s;border:1px solid transparent;margin-bottom:2px;user-select:none;}
+.nav-item:hover{background:rgba(255,255,255,0.07);color:#fff;}
+.nav-item.active{background:rgba(200,75,47,0.2);color:var(--accent2);border-color:rgba(200,75,47,0.25);}
+.nav-item .ni{font-size:15px;width:18px;text-align:center;flex-shrink:0;}
+.sidebar-footer{margin-top:auto;padding:14px 16px;border-top:1px solid rgba(255,255,255,0.06);}
+.sidebar-footer p{font-size:9px;color:rgba(255,255,255,0.2);letter-spacing:0.06em;text-align:center;line-height:1.6;}
+
+.main{background:var(--paper);overflow:auto;}
+.panel{display:none;flex-direction:column;min-height:100vh;}
+.panel.active{display:flex;}
+.panel-header{padding:20px 24px 14px;border-bottom:1px solid var(--border2);background:var(--paper);position:sticky;top:0;z-index:10;}
+.panel-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--ink);}
+.panel-sub{font-size:11px;color:var(--ink3);margin-top:3px;}
+.panel-body{padding:20px 24px;flex:1;}
+
+/* ── API Key Banner ── */
+.api-banner{background:var(--gold-light);border:1px solid var(--gold);border-radius:var(--r2);padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.api-banner.ok{background:var(--green-light);border-color:var(--green);}
+.api-banner-text{flex:1;font-size:12px;color:var(--ink);}
+.api-banner-text strong{color:var(--gold);}
+.api-banner.ok .api-banner-text strong{color:var(--green);}
+
+/* ── Form ── */
+.form-row{display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
+.field{display:flex;flex-direction:column;gap:4px;flex:1;min-width:120px;}
+.field label{font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink3);font-weight:500;}
+.field select,.field input,.field textarea{font-size:12px;font-family:'DM Mono',monospace;border:1px solid var(--border);border-radius:var(--r);background:#fff;color:var(--ink);padding:8px 10px;outline:none;transition:border-color 0.15s;width:100%;}
+.field select:focus,.field input:focus,.field textarea:focus{border-color:var(--accent);}
+.field textarea{resize:vertical;min-height:64px;line-height:1.5;}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:var(--r);border:1px solid var(--border);background:var(--paper2);color:var(--ink);font-size:12px;font-family:'DM Mono',monospace;cursor:pointer;transition:all 0.15s;font-weight:500;white-space:nowrap;}
+.btn:hover{background:var(--paper3);}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);}
+.btn.primary:hover{background:#b03d23;}
+.btn.ghost{background:transparent;border:1px solid var(--border);color:var(--ink2);}
+.btn.ghost:hover{background:var(--paper2);}
+.btn:disabled{opacity:0.4;cursor:not-allowed;}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
+
+/* ── Badges ── */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:500;letter-spacing:0.03em;}
+.badge.red{background:var(--accent-light);color:var(--accent);}
+.badge.green{background:var(--green-light);color:var(--green);}
+.badge.purple{background:var(--purple-light);color:var(--purple);}
+.badge.gold{background:var(--gold-light);color:var(--gold);}
+.badge.gray{background:var(--paper2);color:var(--ink2);border:1px solid var(--border);}
+
+/* ── Script Output ── */
+.script-box{background:#fff;border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;margin-top:14px;}
+.script-box-header{padding:10px 16px;background:var(--paper2);border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.script-section{padding:12px 16px;border-bottom:1px solid var(--border2);}
+.script-section:last-of-type{border-bottom:none;}
+.script-tag{font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:5px;font-weight:500;}
+.script-text{font-size:13px;color:var(--ink);line-height:1.7;}
+.feedback-row{padding:10px 16px;background:var(--paper2);border-top:1px solid var(--border2);display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.star{font-size:18px;cursor:pointer;color:var(--paper3);transition:color 0.1s;line-height:1;}
+.star.on{color:var(--gold);}
+
+/* ── Loading ── */
+.loading{display:flex;align-items:center;gap:10px;color:var(--ink3);font-size:12px;padding:24px 0;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;display:inline-block;flex-shrink:0;}
+
+/* ── Library Table ── */
+.lib-table{width:100%;border-collapse:collapse;font-size:12px;}
+.lib-table th{text-align:left;padding:9px 12px;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink3);border-bottom:1px solid var(--border);font-weight:500;background:var(--paper2);}
+.lib-table td{padding:10px 12px;border-bottom:1px solid var(--border2);color:var(--ink);vertical-align:top;}
+.lib-table tr:hover td{background:var(--paper2);}
+.lib-table tr.gold-row td{background:var(--gold-light);}
+.script-preview{font-size:11px;color:var(--ink3);margin-top:3px;line-height:1.4;font-style:italic;}
+
+/* ── Insights ── */
+.insight{padding:11px 14px;border-left:3px solid var(--accent);background:var(--accent-light);border-radius:0 var(--r) var(--r) 0;font-size:12px;color:var(--ink);margin-bottom:8px;line-height:1.6;}
+.insight.green{border-left-color:var(--green);background:var(--green-light);}
+.insight.purple{border-left-color:var(--purple);background:var(--purple-light);}
+
+/* ── Steps ── */
+.step{display:flex;gap:12px;padding:12px 14px;background:#fff;border:1px solid var(--border2);border-radius:var(--r);margin-bottom:8px;}
+.step-num{width:24px;height:24px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;font-family:'Syne',sans-serif;}
+.step-title{font-size:13px;font-weight:500;margin-bottom:3px;color:var(--ink);}
+.step-desc{font-size:12px;color:var(--ink2);line-height:1.55;}
+
+/* ── Hook Cards ── */
+.hook-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
+.hook-card{padding:12px 14px;border:1px solid var(--border);border-radius:var(--r);background:#fff;cursor:pointer;transition:all 0.15s;}
+.hook-card:hover{border-color:var(--accent);background:var(--accent-light);}
+.hook-card.selected{border-color:var(--accent);background:var(--accent-light);}
+.hook-type{font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin-bottom:5px;font-weight:600;}
+.hook-text{font-size:12px;color:var(--ink);line-height:1.55;}
+
+/* ── Rating dots ── */
+.rdots{display:flex;gap:3px;}
+.rdot{width:7px;height:7px;border-radius:50%;background:var(--border);}
+.rdot.on{background:var(--purple);}
+
+/* ── Bar chart ── */
+.bar-row{display:flex;align-items:center;gap:12px;margin-bottom:8px;}
+.bar-label{font-size:11px;color:var(--ink2);width:120px;flex-shrink:0;}
+.bar-track{flex:1;background:var(--paper2);border-radius:4px;height:18px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:4px;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;transition:width 0.6s ease;}
+.bar-val{font-size:10px;font-weight:600;color:#fff;}
+
+/* ── Variants ── */
+.variant-card{border:1px solid var(--border);border-radius:var(--r);padding:14px;background:#fff;margin-bottom:10px;}
+.variant-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.variant-text{font-size:13px;color:var(--ink);line-height:1.65;font-style:italic;}
+
+/* ── Tabs ── */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border2);margin-bottom:16px;}
+.tab{padding:8px 16px;font-size:11px;cursor:pointer;color:var(--ink3);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.12s;letter-spacing:0.02em;user-select:none;}
+.tab:hover{color:var(--ink);}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:500;}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+/* ── Learned rules ── */
+.rule{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--paper2);border-radius:var(--r);margin-bottom:6px;font-size:12px;color:var(--ink2);line-height:1.55;border:1px solid var(--border2);}
+.rule-icon{font-size:14px;flex-shrink:0;margin-top:1px;}
+
+/* ── Misc ── */
+.empty{text-align:center;padding:40px 16px;color:var(--ink3);font-size:12px;line-height:1.7;}
+.copy-btn{cursor:pointer;opacity:0.5;font-size:11px;padding:3px 8px;border:1px solid var(--border);border-radius:4px;background:transparent;color:var(--ink2);font-family:'DM Mono',monospace;transition:all 0.15s;}
+.copy-btn:hover{opacity:1;background:var(--paper2);}
+
+.swipe-item{padding:12px 14px;border:1px solid var(--border);border-radius:var(--r);background:#fff;cursor:pointer;transition:all 0.15s;margin-bottom:8px;}
+.swipe-item:hover{border-color:var(--accent);background:var(--accent-light);}
+.swipe-type{font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin-bottom:5px;font-weight:600;}
+.swipe-text{font-size:13px;color:var(--ink);line-height:1.55;font-style:italic;}
+
+.formula-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+/* ── Responsive ── */
+@media(max-width:700px){
+  .app{grid-template-columns:1fr;}
+  .sidebar{height:auto;position:relative;flex-direction:row;flex-wrap:wrap;}
+  .logo{padding:12px;}
+  .nav-group{padding:8px;}
+  .hook-grid{grid-template-columns:1fr;}
+  .formula-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ═══ SIDEBAR ═══ -->
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-mark">S</div>
+    <div>
+      <div class="logo-text">ScriptBot</div>
+      <div class="logo-sub">Performance Marketing AI</div>
+    </div>
+  </div>
+
+  <div class="nav-group">
+    <span class="nav-label">Generate</span>
+    <div class="nav-item active" onclick="nav('generator',this)"><span class="ni">✦</span>Generator</div>
+    <div class="nav-item" onclick="nav('hooks',this)"><span class="ni">⚡</span>Hook Builder</div>
+  </div>
+  <div class="nav-group">
+    <span class="nav-label">Framework</span>
+    <div class="nav-item" onclick="nav('framework',this)"><span class="ni">◈</span>Script Blueprint</div>
+    <div class="nav-item" onclick="nav('loop',this)"><span class="ni">↻</span>Learning Loop</div>
+  </div>
+  <div class="nav-group">
+    <span class="nav-label">Memory</span>
+    <div class="nav-item" onclick="nav('library',this)"><span class="ni">▦</span>Library</div>
+    <div class="nav-item" onclick="nav('insights',this)"><span class="ni">◎</span>Insights</div>
+  </div>
+  <div class="nav-group">
+    <span class="nav-label">Settings</span>
+    <div class="nav-item" onclick="nav('settings',this)"><span class="ni">⚙</span>API Settings</div>
+  </div>
+
+  <div class="sidebar-footer">
+    <p>Powered by Claude AI<br>ScriptBot v1.0</p>
+  </div>
+</div>
+
+<!-- ═══ MAIN ═══ -->
+<div class="main">
+
+<!-- ════ GENERATOR ════ -->
+<div id="panel-generator" class="panel active">
+  <div class="panel-header">
+    <div class="panel-title">Script Generator</div>
+    <div class="panel-sub">AI-powered scripts for Performance, Remarketing &amp; App Install campaigns</div>
+  </div>
+  <div class="panel-body">
+    <div id="api-banner" class="api-banner">
+      <div class="api-banner-text">⚠ <strong>API key required.</strong> Go to <b>Settings</b> to enter your Anthropic API key before generating scripts.</div>
+      <button class="btn" style="font-size:11px;padding:6px 12px;" onclick="nav('settings',document.querySelector('.nav-item:last-of-type'))">Open Settings</button>
+    </div>
+
+    <div class="form-row">
+      <div class="field">
+        <label>Campaign Type</label>
+        <select id="g-camp">
+          <option value="performance">Performance Marketing</option>
+          <option value="remarketing">Remarketing</option>
+          <option value="app-install">App Install</option>
+          <option value="lead-gen">Lead Generation</option>
+          <option value="brand">Brand Awareness</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Hook Style</label>
+        <select id="g-hook">
+          <option value="problem-first">Problem-First (PAS)</option>
+          <option value="curiosity-gap">Curiosity Gap</option>
+          <option value="social-proof">Social Proof</option>
+          <option value="bold-claim">Bold Claim</option>
+          <option value="before-after">Before/After (BAB)</option>
+          <option value="direct-question">Direct Question</option>
+        </select>
+      </div>
+      <div class="field" style="max-width:100px;">
+        <label>Duration</label>
+        <select id="g-dur">
+          <option value="15">15 sec</option>
+          <option value="30" selected>30 sec</option>
+          <option value="60">60 sec</option>
+          <option value="90">90 sec</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field" style="flex:2;">
+        <label>Product / Service</label>
+        <input type="text" id="g-product" placeholder="e.g. Salary advance fintech app for salaried Indians" />
+      </div>
+      <div class="field">
+        <label>Target Audience</label>
+        <input type="text" id="g-audience" placeholder="e.g. Salaried millennials 25–35" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field">
+        <label>Core Problem / Pain</label>
+        <input type="text" id="g-pain" placeholder="e.g. Running out of money before payday" />
+      </div>
+      <div class="field">
+        <label>Key CTA</label>
+        <input type="text" id="g-cta" placeholder="e.g. Download Now — Get ₹5000 Instantly" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field">
+        <label>Tone</label>
+        <select id="g-tone">
+          <option value="empathetic" selected>Empathetic</option>
+          <option value="urgent">Urgent</option>
+          <option value="bold">Bold &amp; Direct</option>
+          <option value="casual">Casual / Relatable</option>
+          <option value="authoritative">Authoritative</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Platform</label>
+        <select id="g-platform">
+          <option value="Meta (Facebook/Instagram)">Meta (FB/IG)</option>
+          <option value="YouTube">YouTube</option>
+          <option value="Google UAC">Google UAC</option>
+          <option value="Snapchat">Snapchat</option>
+          <option value="Programmatic">Programmatic</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>USP / Key Benefit</label>
+        <input type="text" id="g-usp" placeholder="e.g. Zero interest, 2-min approval" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field">
+        <label>Past Script (optional — paste for style learning)</label>
+        <textarea id="g-context" placeholder="Paste a past script that performed well so the bot learns your brand voice..."></textarea>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn primary" id="btn-gen" onclick="generateScript()">✦ Generate Script</button>
+      <button class="btn" id="btn-var" onclick="generateVariants()">⊞ Generate 3 Variants</button>
+    </div>
+    <div id="gen-output"></div>
+  </div>
+</div>
+
+<!-- ════ HOOKS ════ -->
+<div id="panel-hooks" class="panel">
+  <div class="panel-header">
+    <div class="panel-title">Hook Builder</div>
+    <div class="panel-sub">The first 3 seconds decide everything — build hooks systematically</div>
+  </div>
+  <div class="panel-body">
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab(event,'hpanels','hformulas')">Hook Formulas</div>
+      <div class="tab" onclick="switchTab(event,'hpanels','hgen')">AI Generator</div>
+      <div class="tab" onclick="switchTab(event,'hpanels','hswipe')">Swipe File</div>
+    </div>
+    <div id="hformulas" class="tab-panel active">
+      <div class="formula-grid">
+        <div class="step"><div class="step-num" style="background:var(--accent);">P</div><div><div class="step-title">PAS — Problem → Agitate → Solution</div><div class="step-desc">Lead with pain. Make it visceral. Position your product as relief. Best for cold audiences on Meta.</div><div style="margin-top:8px;font-size:11px;color:var(--accent);font-style:italic;">"Payday 10 din door? Wallet mein sirf ₹200? Hum samjhte hain. AbhiPay gives you salary now."</div></div></div>
+        <div class="step"><div class="step-num" style="background:var(--purple);">A</div><div><div class="step-title">AIDA — Attention → Interest → Desire → Action</div><div class="step-desc">Classic funnel. Works across all formats and durations. Best for YouTube long-form.</div><div style="margin-top:8px;font-size:11px;color:var(--purple);font-style:italic;">"This app paid my salary 5 days early. → No interest. → 2M users. → Download free."</div></div></div>
+        <div class="step"><div class="step-num" style="background:var(--gold);">B</div><div><div class="step-title">BAB — Before → After → Bridge</div><div class="step-desc">Show painful state → desired state → your product as the bridge. Strong for remarketing.</div><div style="margin-top:8px;font-size:11px;color:var(--gold);font-style:italic;">"Borrowing from friends → Now I get salary early → AbhiPay made that real."</div></div></div>
+        <div class="step"><div class="step-num" style="background:var(--green);">C</div><div><div class="step-title">CPB — Curiosity → Proof → Benefit</div><div class="step-desc">Open a loop, back with credibility, land the benefit. Best for app install campaigns.</div><div style="margin-top:8px;font-size:11px;color:var(--green);font-style:italic;">"Why are 2M Indians using this app? RBI-registered, zero interest — get salary early."</div></div></div>
+      </div>
+      <div class="insight" style="margin-top:14px;">Problem-first hooks outperform curiosity hooks by ~34% on Meta for fintech. For YouTube skippable ads, delay brand reveal to 8–10s to cut skip rates by 40%.</div>
+    </div>
+    <div id="hgen" class="tab-panel">
+      <div class="form-row">
+        <div class="field"><label>Product</label><input type="text" id="h-product" placeholder="Your product or app" /></div>
+        <div class="field"><label>Core Pain Point</label><input type="text" id="h-pain" placeholder="The #1 frustration of your audience" /></div>
+        <div class="field"><label>Audience</label><input type="text" id="h-audience" placeholder="Who are they?" /></div>
+      </div>
+      <button class="btn primary" onclick="generateHooks()">⚡ Generate 6 Hooks</button>
+      <div id="hook-output"></div>
+    </div>
+    <div id="hswipe" class="tab-panel">
+      <div style="font-size:11px;color:var(--ink3);margin-bottom:12px;">High-performing hooks from your campaigns. Click any to copy.</div>
+      <div id="swipe-list">
+        <div class="swipe-item" onclick="copyText(this.querySelector('.swipe-text').textContent)">
+          <div class="swipe-type">Problem-First · App Install · CTR 6.2%</div>
+          <div class="swipe-text">"Payday 10 din door hai aur account mein sirf ₹500? Hum samjhte hain."</div>
+        </div>
+        <div class="swipe-item" onclick="copyText(this.querySelector('.swipe-text').textContent)">
+          <div class="swipe-type">Bold Claim · Remarketing · CTR 5.8%</div>
+          <div class="swipe-text">"You checked us out. Here's why 2 million people said yes."</div>
+        </div>
+        <div class="swipe-item" onclick="copyText(this.querySelector('.swipe-text').textContent)">
+          <div class="swipe-type">Curiosity Gap · Performance · CTR 4.9%</div>
+          <div class="swipe-text">"There's one thing your salary slip doesn't tell you — and it's costing you."</div>
+        </div>
+        <div class="swipe-item" onclick="copyText(this.querySelector('.swipe-text').textContent)">
+          <div class="swipe-type">Social Proof · Brand · CTR 4.4%</div>
+          <div class="swipe-text">"Riya got her salary 5 days early. No interest. No questions. Here's how."</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ BLUEPRINT ════ -->
+<div id="panel-framework" class="panel">
+  <div class="panel-header">
+    <div class="panel-title">Script Blueprint</div>
+    <div class="panel-sub">Proven structural frameworks by campaign objective</div>
+  </div>
+  <div class="panel-body">
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab(event,'fpanels','fperf')">Performance</div>
+      <div class="tab" onclick="switchTab(event,'fpanels','fremark')">Remarketing</div>
+      <div class="tab" onclick="switchTab(event,'fpanels','fapp')">App Install</div>
+    </div>
+    <div id="fperf" class="tab-panel active">
+      <div class="step"><div class="step-num">1</div><div><div class="step-title">Hook 0–3s — Stop the Scroll</div><div class="step-desc">Lead with the pain point or bold claim. No brand logo yet. Visual-first: show the problem happening. Pattern interrupt is the only goal here.</div></div></div>
+      <div class="step"><div class="step-num">2</div><div><div class="step-title">Agitate 3–8s — Make It Personal</div><div class="step-desc">Amplify the problem emotionally. Use a relatable scenario. "Sound familiar?" moment. The audience must feel seen before they'll listen to your solution.</div></div></div>
+      <div class="step"><div class="step-num">3</div><div><div class="step-title">Solution Intro 8–15s — The Reveal</div><div class="step-desc">Introduce product as the natural answer. Show it in action — screen recording, demo, lifestyle. Keep it simple: demonstrate one core function only.</div></div></div>
+      <div class="step"><div class="step-num">4</div><div><div class="step-title">Proof 15–22s — Credibility Stack</div><div class="step-desc">1–2 proof points max: user count, rating, regulator badge, or media mention. More than 2 dilutes trust rather than building it.</div></div></div>
+      <div class="step"><div class="step-num">5</div><div><div class="step-title">CTA 22–30s — Single Clear Action</div><div class="step-desc">One action only. Urgency trigger if authentic. Reinforce the core benefit. "Download free. Get ₹5000 in 2 minutes." Zero confusion allowed.</div></div></div>
+    </div>
+    <div id="fremark" class="tab-panel">
+      <div class="step"><div class="step-num">1</div><div><div class="step-title">Acknowledge 0–4s — They Know You</div><div class="step-desc">Skip the cold intro. Reference prior intent directly. "You explored us — let's talk about why 2M said yes." Warm audiences hate being treated as cold.</div></div></div>
+      <div class="step"><div class="step-num">2</div><div><div class="step-title">Objection Dissolution 4–12s</div><div class="step-desc">Name the #1 reason they didn't convert (trust, price, complexity). Lead with the objection, then dissolve it with a specific, credible proof point.</div></div></div>
+      <div class="step"><div class="step-num">3</div><div><div class="step-title">Urgency / Incentive 12–20s</div><div class="step-desc">Time-limited offer or consequence of inaction. "₹500 cashback this week only." The delay must feel genuinely costly without being manipulative.</div></div></div>
+      <div class="step"><div class="step-num">4</div><div><div class="step-title">Peer Proof 20–26s</div><div class="step-desc">Someone exactly like them made the choice. UGC video or testimonial from the same audience segment. Micro-relatability beats celebrity here.</div></div></div>
+      <div class="step"><div class="step-num">5</div><div><div class="step-title">Frictionless CTA 26–30s</div><div class="step-desc">"Takes 2 minutes. No documents. No calls." Emphasize ease over urgency. Remove every perceived barrier between them and the conversion action.</div></div></div>
+    </div>
+    <div id="fapp" class="tab-panel">
+      <div class="step"><div class="step-num">1</div><div><div class="step-title">Lifestyle Hook 0–3s — Show the Outcome</div><div class="step-desc">Show someone's life AFTER the app. Not the product — the result. Real phone, real UI. Aspirational but undeniably relatable to your audience.</div></div></div>
+      <div class="step"><div class="step-num">2</div><div><div class="step-title">Screen Demo 3–12s — Make It Tangible</div><div class="step-desc">Live screen recording of the core action. Show 3 taps max to core value. Real data, no placeholder. Thumb-friendly UI clearly visible throughout.</div></div></div>
+      <div class="step"><div class="step-num">3</div><div><div class="step-title">Feature → Benefit Bridge 12–20s</div><div class="step-desc">Name 2–3 features. Immediately pivot to "what that means for you." Users buy outcomes not features — bridge every single time.</div></div></div>
+      <div class="step"><div class="step-num">4</div><div><div class="step-title">Install Proof 20–26s</div><div class="step-desc">Play Store / App Store rating + download count. "4.8 stars · 2M downloads." Platform trust signals work better here than brand trust alone.</div></div></div>
+      <div class="step"><div class="step-num">5</div><div><div class="step-title">Install CTA 26–30s</div><div class="step-desc">"Download free" + platform badge. Create separate iOS / Android cuts for better performance. Tie the final frame back to the lifestyle outcome shown in step 1.</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ LEARNING LOOP ════ -->
+<div id="panel-loop" class="panel">
+  <div class="panel-header">
+    <div class="panel-title">Learning Loop</div>
+    <div class="panel-sub">How ScriptBot improves with every campaign cycle</div>
+  </div>
+  <div class="panel-body">
+    <div class="step"><div class="step-num">1</div><div><div class="step-title">Generation — The Output Layer</div><div class="step-desc">Bot generates scripts using frameworks + learned patterns from your library. Each script gets a unique ID with metadata: hook type, campaign, tone, duration, platform.</div></div></div>
+    <div class="step"><div class="step-num">2</div><div><div class="step-title">Human Feedback — The Signal Layer</div><div class="step-desc">Your team rates each script (1–5 stars), tags quality issues ("weak CTA", "too wordy", "strong hook"), and marks it used or revised. This is the first feedback loop.</div></div></div>
+    <div class="step"><div class="step-num">3</div><div><div class="step-title">Campaign Performance — The Truth Layer</div><div class="step-desc">CTR, CVR, install rate, ROAS, VTR are linked back to script ID. High-performing scripts are auto-flagged as Gold templates. This is the strongest signal in the loop.</div></div></div>
+    <div class="step"><div class="step-num">4</div><div><div class="step-title">Pattern Extraction — The Intelligence Layer</div><div class="step-desc">Which hook types win for which verticals? What duration × platform × tone drives installs? Which words appear in every Gold script? Patterns become learned rules.</div></div></div>
+    <div class="step"><div class="step-num">5</div><div><div class="step-title">Prompt Refinement — The Loop Closes</div><div class="step-desc">Learned rules are injected back into generation context. "For fintech remarketing on Meta: lead with objection, use casual tone, avoid 'loan'" becomes a hard rule that improves every future script.</div></div></div>
+    <div class="insight" style="margin-top:8px;">Signal strength: ROAS (strongest) → CVR → CTR → Human rating (weakest). Never over-index on taste — always tie feedback to downstream metrics.</div>
+    <div class="insight green">Run each variant on ≥500 impressions before feeding performance data into the loop. Noisy signals mislead pattern extraction.</div>
+    <div class="insight purple">Every script saved to the Library with a performance data entry automatically updates your generation context. The bot gets smarter every cycle.</div>
+  </div>
+</div>
+
+<!-- ════ LIBRARY ════ -->
+<div id="panel-library" class="panel">
+  <div class="panel-header">
+    <div class="panel-title">Script Library</div>
+    <div class="panel-sub">All generated scripts with ratings, performance data, and learned status</div>
+  </div>
+  <div class="panel-body">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+      <button class="btn primary" style="font-size:11px;padding:6px 12px;" onclick="filterLib('all',this)">All</button>
+      <button class="btn ghost" style="font-size:11px;padding:6px 12px;" onclick="filterLib('performance',this)">Performance</button>
+      <button class="btn ghost" style="font-size:11px;padding:6px 12px;" onclick="filterLib('remarketing',this)">Remarketing</button>
+      <button class="btn ghost" style="font-size:11px;padding:6px 12px;" onclick="filterLib('app-install',this)">App Install</button>
+      <button class="btn ghost" style="font-size:11px;padding:6px 12px;" onclick="filterLib('gold',this)">★ Gold</button>
+      <button class="btn ghost" style="font-size:11px;padding:6px 12px;margin-left:auto;color:var(--accent);" onclick="clearLibrary()">Clear All</button>
+    </div>
+    <div id="lib-content">
+      <div class="empty">No scripts saved yet.<br>Generate scripts and click "Save to Library" to build your database.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ INSIGHTS ════ -->
+<div id="panel-insights" class="panel">
+  <div class="panel-header">
+    <div class="panel-title">Learned Insights</div>
+    <div class="panel-sub">Patterns extracted from your script library and campaign performance</div>
+  </div>
+  <div class="panel-body">
+    <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:12px;font-weight:500;">Hook Performance by Type (avg CTR)</div>
+    <div id="perf-chart">
+      <div class="bar-row"><div class="bar-label">Problem-First</div><div class="bar-track"><div class="bar-fill" style="width:89%;background:var(--accent);"><span class="bar-val">6.2%</span></div></div></div>
+      <div class="bar-row"><div class="bar-label">Social Proof</div><div class="bar-track"><div class="bar-fill" style="width:73%;background:var(--green);"><span class="bar-val">5.1%</span></div></div></div>
+      <div class="bar-row"><div class="bar-label">Bold Claim</div><div class="bar-track"><div class="bar-fill" style="width:69%;background:var(--gold);"><span class="bar-val">4.8%</span></div></div></div>
+      <div class="bar-row"><div class="bar-label">Curiosity Gap</div><div class="bar-track"><div class="bar-fill" style="width:63%;background:var(--purple);"><span class="bar-val">4.4%</span></div></div></div>
+      <div class="bar-row"><div class="bar-label">Before/After</div><div class="bar-track"><div class="bar-fill" style="width:56%;background:var(--ink3);"><span class="bar-val">3.9%</span></div></div></div>
+    </div>
+    <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink3);margin:20px 0 10px;font-weight:500;">Learned Rules (from your library + performance data)</div>
+    <div id="learned-rules">
+      <div class="rule"><span class="rule-icon">🎯</span><div>For <strong>App Install on Meta</strong>: Problem-First + casual tone + screen demo = 2.1× higher installs vs brand-led scripts.</div></div>
+      <div class="rule"><span class="rule-icon">🔁</span><div>For <strong>Remarketing</strong>: Acknowledging hesitation ("we know you weren't sure...") recovers 18% more drop-offs than a generic offer.</div></div>
+      <div class="rule"><span class="rule-icon">📺</span><div>For <strong>YouTube skippable</strong>: Brand reveal before second 5 increases skip rate by 40%. Delay brand to 8–10s minimum.</div></div>
+      <div class="rule"><span class="rule-icon">⏱️</span><div>For <strong>15-second cuts</strong>: Hook + single benefit + CTA only. No social proof — it crowds the CTA. Save proof for 30s+.</div></div>
+      <div class="rule"><span class="rule-icon">💬</span><div>For <strong>Fintech vertical</strong>: Avoid "loan" in hooks. "Advance" and "early salary" outperform it 3× on trust scores.</div></div>
+    </div>
+    <div style="margin-top:20px;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink3);font-weight:500;margin-bottom:10px;">Feed Performance Data → Learning Loop</div>
+    <div class="form-row">
+      <div class="field"><label>Script ID</label><input type="text" id="perf-id" placeholder="e.g. SCR-001" /></div>
+      <div class="field"><label>CTR %</label><input type="text" id="perf-ctr" placeholder="e.g. 5.2" /></div>
+      <div class="field"><label>CVR %</label><input type="text" id="perf-cvr" placeholder="e.g. 12.4" /></div>
+      <div class="field"><label>ROAS</label><input type="text" id="perf-roas" placeholder="e.g. 3.2x" /></div>
+    </div>
+    <button class="btn primary" onclick="addPerformance()">↻ Feed to Learning Loop</button>
+    <div id="perf-feedback" style="margin-top:10px;font-size:12px;color:var(--green);min-height:20px;"></div>
+  </div>
+</div>
+
+<!-- ════ SETTINGS ════ -->
+<div id="panel-settings" class="panel">
+  <div class="panel-header">
+    <div class="panel-title">API Settings</div>
+    <div class="panel-sub">Configure your Anthropic API key to enable script generation</div>
+  </div>
+  <div class="panel-body">
+    <div class="step" style="margin-bottom:16px;">
+      <div class="step-num">1</div>
+      <div>
+        <div class="step-title">Get your Anthropic API Key</div>
+        <div class="step-desc">Go to <a href="https://console.anthropic.com" target="_blank" style="color:var(--accent);">console.anthropic.com</a> → API Keys → Create Key. Your key starts with <code style="background:var(--paper2);padding:1px 5px;border-radius:3px;">sk-ant-</code></div>
+      </div>
+    </div>
+    <div class="step" style="margin-bottom:16px;">
+      <div class="step-num">2</div>
+      <div>
+        <div class="step-title">Enter your API key below</div>
+        <div class="step-desc">Your key is stored only in your browser's localStorage — it never leaves your device or gets sent anywhere except directly to Anthropic's API.</div>
+      </div>
+    </div>
+    <div class="form-row" style="margin-top:8px;">
+      <div class="field" style="flex:3;">
+        <label>Anthropic API Key</label>
+        <input type="password" id="api-key-input" placeholder="sk-ant-api03-..." />
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn primary" onclick="saveApiKey()">✓ Save API Key</button>
+      <button class="btn ghost" onclick="clearApiKey()">✕ Clear Key</button>
+    </div>
+    <div id="key-feedback" style="margin-top:12px;font-size:12px;min-height:20px;"></div>
+
+    <div style="margin-top:24px;padding-top:16px;border-top:1px solid var(--border2);">
+      <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink3);font-weight:500;margin-bottom:12px;">Model Configuration</div>
+      <div class="form-row">
+        <div class="field">
+          <label>Model</label>
+          <select id="model-select">
+            <option value="claude-sonnet-4-20250514" selected>claude-sonnet-4 (recommended)</option>
+            <option value="claude-opus-4-20250514">claude-opus-4 (most capable)</option>
+            <option value="claude-haiku-4-5-20251001">claude-haiku-4 (fastest)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Max Tokens</label>
+          <select id="tokens-select">
+            <option value="800">800 (concise)</option>
+            <option value="1200" selected>1200 (balanced)</option>
+            <option value="2000">2000 (detailed)</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn" onclick="saveModelSettings()">Save Model Settings</button>
+    </div>
+
+    <div style="margin-top:24px;padding-top:16px;border-top:1px solid var(--border2);">
+      <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink3);font-weight:500;margin-bottom:8px;">Data Management</div>
+      <div style="font-size:12px;color:var(--ink2);margin-bottom:10px;">All data (scripts, rules, settings) is stored in your browser's localStorage.</div>
+      <button class="btn ghost" style="color:var(--accent);" onclick="exportData()">↓ Export Library JSON</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+let library = JSON.parse(localStorage.getItem('sb-library') || '[]');
+let learnedRules = JSON.parse(localStorage.getItem('sb-rules') || '[]');
+let apiKey = localStorage.getItem('sb-apikey') || '';
+let modelId = localStorage.getItem('sb-model') || 'claude-sonnet-4-20250514';
+let maxTokens = parseInt(localStorage.getItem('sb-tokens') || '1200');
+
+function saveLib() { localStorage.setItem('sb-library', JSON.stringify(library)); }
+function saveRules() { localStorage.setItem('sb-rules', JSON.stringify(learnedRules)); }
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  updateApiBanner();
+  renderLibrary();
+  if (apiKey) document.getElementById('api-key-input').value = apiKey;
+  if (localStorage.getItem('sb-model')) document.getElementById('model-select').value = modelId;
+  if (localStorage.getItem('sb-tokens')) document.getElementById('tokens-select').value = maxTokens;
+});
+
+// ═══════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════
+function nav(id, el) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  if (el) el.classList.add('active');
+  if (id === 'library') renderLibrary();
+}
+
+function switchTab(e, groupClass, targetId) {
+  const container = e.currentTarget.closest('.panel-body');
+  container.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  container.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  e.currentTarget.classList.add('active');
+  document.getElementById(targetId).classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════════
+// API KEY
+// ═══════════════════════════════════════════════════════
+function saveApiKey() {
+  const val = document.getElementById('api-key-input').value.trim();
+  if (!val.startsWith('sk-ant-')) {
+    document.getElementById('key-feedback').innerHTML = '<span style="color:var(--accent);">⚠ Key should start with sk-ant- — double check and try again.</span>';
+    return;
+  }
+  apiKey = val;
+  localStorage.setItem('sb-apikey', val);
+  document.getElementById('key-feedback').innerHTML = '<span style="color:var(--green);">✓ API key saved. You can now generate scripts.</span>';
+  updateApiBanner();
+}
+
+function clearApiKey() {
+  apiKey = '';
+  localStorage.removeItem('sb-apikey');
+  document.getElementById('api-key-input').value = '';
+  document.getElementById('key-feedback').innerHTML = '<span style="color:var(--ink3);">API key cleared.</span>';
+  updateApiBanner();
+}
+
+function saveModelSettings() {
+  modelId = document.getElementById('model-select').value;
+  maxTokens = parseInt(document.getElementById('tokens-select').value);
+  localStorage.setItem('sb-model', modelId);
+  localStorage.setItem('sb-tokens', maxTokens);
+  alert('Model settings saved.');
+}
+
+function updateApiBanner() {
+  const b = document.getElementById('api-banner');
+  if (!b) return;
+  if (apiKey) {
+    b.className = 'api-banner ok';
+    b.innerHTML = `<div class="api-banner-text">✓ <strong>API key active.</strong> ScriptBot is ready to generate.</div>`;
+  } else {
+    b.className = 'api-banner';
+    b.innerHTML = `<div class="api-banner-text">⚠ <strong>API key required.</strong> Go to <b>Settings</b> to enter your Anthropic API key.</div><button class="btn" style="font-size:11px;padding:6px 12px;" onclick="nav('settings',null)">Open Settings</button>`;
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// CLAUDE API CALL
+// ═══════════════════════════════════════════════════════
+async function callClaude(prompt, system) {
+  if (!apiKey) throw new Error('No API key set. Go to Settings first.');
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: modelId,
+      max_tokens: maxTokens,
+      system: system,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    throw new Error(err.error?.message || `API error ${resp.status}`);
+  }
+  const data = await resp.json();
+  return data.content[0].text;
+}
+
+// ═══════════════════════════════════════════════════════
+// LEARNED CONTEXT BUILDER
+// ═══════════════════════════════════════════════════════
+function buildLearnedContext() {
+  const gold = library.filter(s => s.rating >= 4 || s.gold);
+  let ctx = '';
+  if (learnedRules.length) {
+    ctx += '\n\n--- LEARNED PERFORMANCE RULES (apply these strictly) ---\n';
+    learnedRules.forEach(r => { ctx += `• ${r}\n`; });
+  }
+  if (gold.length) {
+    ctx += '\n--- HIGH-RATED PAST SCRIPTS (match this quality & style) ---\n';
+    gold.slice(-3).forEach(s => {
+      ctx += `[${s.camp} · ${s.hook} · ${s.tone} · Rating:${s.rating}/5]\nHook: ${s.hookLine || ''}\n`;
+    });
+  }
+  return ctx;
+}
+
+// ═══════════════════════════════════════════════════════
+// SCRIPT GENERATOR
+// ═══════════════════════════════════════════════════════
+async function generateScript() {
+  const camp = document.getElementById('g-camp').value;
+  const hook = document.getElementById('g-hook').value;
+  const dur = document.getElementById('g-dur').value;
+  const product = document.getElementById('g-product').value || 'the product';
+  const audience = document.getElementById('g-audience').value || 'the target audience';
+  const pain = document.getElementById('g-pain').value || 'main pain point';
+  const cta = document.getElementById('g-cta').value || 'Download Now';
+  const tone = document.getElementById('g-tone').value;
+  const platform = document.getElementById('g-platform').value;
+  const usp = document.getElementById('g-usp').value || '';
+  const context = document.getElementById('g-context').value || '';
+
+  const out = document.getElementById('gen-output');
+  out.innerHTML = `<div class="loading"><div class="spin"></div>Generating ${dur}s ${camp} script via Claude AI...</div>`;
+  document.getElementById('btn-gen').disabled = true;
+  document.getElementById('btn-var').disabled = true;
+
+  const system = `You are an expert performance marketing scriptwriter with 10+ years experience writing high-converting ad scripts for digital campaigns across Meta, YouTube, Google UAC, and programmatic channels.
+
+You write scripts that are:
+- Emotionally resonant and audience-specific
+- Platform-native (understanding thumb-stop, skip behavior, etc.)
+- Conversion-focused with clear single CTAs
+- Authentic, not generic — specific details over vague claims
+
+Always respond with valid JSON only. No markdown, no preamble, no explanation. Structure:
+{"hook":"...","agitate":"...","solution":"...","proof":"...","cta":"...","hookLine":"..."}
+
+hookLine is just the very first sentence of hook — the single scroll-stopping line.
+Each section should be punchy, real, and specific to the inputs provided.`;
+
+  const learnedCtx = buildLearnedContext();
+  const pastCtx = context ? `\n\nStyle/voice reference (past script that worked):\n${context.slice(0, 400)}` : '';
+
+  const prompt = `Write a ${dur}-second ${camp} ad script with these exact parameters:
+
+Product/Service: ${product}
+Target Audience: ${audience}
+Core Pain Point: ${pain}
+Hook Style: ${hook}
+Tone: ${tone}
+Platform: ${platform}
+Key CTA: ${cta}
+USP/Key Benefit: ${usp}
+${learnedCtx}${pastCtx}
+
+Make it authentic, emotionally specific, and conversion-optimized. Avoid generic filler. Use real-sounding language for the audience. Keep each section tight and purposeful.`;
+
+  try {
+    const raw = await callClaude(prompt, system);
+    let data;
+    try {
+      data = JSON.parse(raw);
+    } catch(e) {
+      const m = raw.match(/\{[\s\S]*?\}/);
+      data = m ? JSON.parse(m[0]) : { hook: raw, agitate: '', solution: '', proof: '', cta: cta, hookLine: raw.split('.')[0] };
+    }
+    const id = 'SCR-' + String(library.length + 1).padStart(3, '0');
+    const scriptObj = { id, camp, hook, tone, platform, dur, product, audience, pain, cta, usp, sections: data, hookLine: data.hookLine || data.hook?.split('.')[0] || '', rating: 0, gold: false, ts: Date.now() };
+    out.innerHTML = renderScriptBox(scriptObj, true);
+    window._currentScript = scriptObj;
+  } catch(err) {
+    out.innerHTML = `<div class="insight" style="margin-top:14px;">⚠ Error: ${err.message}</div>`;
+  }
+  document.getElementById('btn-gen').disabled = false;
+  document.getElementById('btn-var').disabled = false;
+}
+
+// ═══════════════════════════════════════════════════════
+// RENDER SCRIPT BOX
+// ═══════════════════════════════════════════════════════
+function renderScriptBox(s, showActions) {
+  const sec = s.sections || {};
+  const timings = {
+    hook: `Hook (0–3s)`,
+    agitate: `Agitate (3–8s)`,
+    solution: `Solution (8–${Math.round(s.dur * 0.55)}s)`,
+    proof: `Proof (${Math.round(s.dur * 0.55)}–${Math.round(s.dur * 0.85)}s)`,
+    cta: `CTA (${Math.round(s.dur * 0.85)}–${s.dur}s)`
+  };
+  const campColors = { performance:'gray', remarketing:'red', 'app-install':'purple', 'lead-gen':'green', brand:'green' };
+  let html = `<div class="script-box">
+    <div class="script-box-header">
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+        <span class="badge gray">${s.id}</span>
+        <span class="badge ${campColors[s.camp]||'gray'}">${s.camp}</span>
+        <span class="badge gray">${s.hook}</span>
+        <span class="badge gray">${s.dur}s</span>
+        <span class="badge gray">${s.platform}</span>
+        ${s.gold ? '<span class="badge gold">★ Gold</span>' : ''}
+      </div>
+      <button class="copy-btn" onclick="copyScript('${s.id}')">copy all</button>
+    </div>`;
+  ['hook','agitate','solution','proof','cta'].forEach(k => {
+    if (sec[k]) html += `<div class="script-section"><div class="script-tag">${timings[k]||k}</div><div class="script-text">${sec[k]}</div></div>`;
+  });
+  html += `<div class="feedback-row">
+    <span style="font-size:11px;color:var(--ink3);margin-right:4px;">Rate:</span>
+    ${[1,2,3,4,5].map(n => `<span class="star" onclick="rateStar(this,${n},'${s.id}')" data-n="${n}">★</span>`).join('')}
+    ${showActions ? `<div style="display:flex;gap:6px;margin-left:auto;">
+      <button class="btn ghost" style="font-size:11px;padding:5px 12px;" onclick="saveScript()">Save to Library</button>
+      <button class="btn primary" style="font-size:11px;padding:5px 12px;" onclick="improveScript()">↻ Improve</button>
+    </div>` : ''}
+  </div></div>`;
+  return html;
+}
+
+function rateStar(el, n, id) {
+  const bar = el.closest('.feedback-row');
+  bar.querySelectorAll('.star').forEach((s, i) => s.classList.toggle('on', i < n));
+  if (window._currentScript && window._currentScript.id === id) window._currentScript.rating = n;
+  const s = library.find(x => x.id === id);
+  if (s) { s.rating = n; s.gold = n >= 4; saveLib(); renderLibrary(); }
+}
+
+function saveScript() {
+  if (!window._currentScript) return;
+  const s = window._currentScript;
+  const idx = library.findIndex(x => x.id === s.id);
+  if (idx >= 0) library[idx] = s; else library.push(s);
+  saveLib();
+  const btn = event.currentTarget;
+  btn.textContent = '✓ Saved!';
+  btn.disabled = true;
+  setTimeout(() => { btn.textContent = 'Save to Library'; btn.disabled = false; }, 2500);
+}
+
+async function improveScript() {
+  if (!window._currentScript) return;
+  const s = window._currentScript;
+  const out = document.getElementById('gen-output');
+  out.innerHTML = `<div class="loading"><div class="spin"></div>Improving script via Claude AI...</div>`;
+  const system = `You are an expert performance marketing scriptwriter. Improve the given ad script to be more punchy, emotionally resonant, and conversion-focused. Respond with valid JSON only:
+{"hook":"...","agitate":"...","solution":"...","proof":"...","cta":"...","hookLine":"..."}`;
+  const prompt = `Improve this ${s.camp} script for "${s.product}". Make the hook more powerful, the CTA sharper, and tighten every section. Same structure, higher impact.
+
+Hook: ${s.sections.hook}
+Agitate: ${s.sections.agitate}
+Solution: ${s.sections.solution}
+Proof: ${s.sections.proof}
+CTA: ${s.sections.cta}`;
+  try {
+    const raw = await callClaude(prompt, system);
+    let data;
+    try { data = JSON.parse(raw); } catch(e) { const m = raw.match(/\{[\s\S]*?\}/); data = m ? JSON.parse(m[0]) : s.sections; }
+    const improved = { ...s, id: s.id + '-v2', sections: data, hookLine: data.hookLine || data.hook?.split('.')[0] || '', rating: 0, gold: false, ts: Date.now() };
+    out.innerHTML = renderScriptBox(improved, true);
+    window._currentScript = improved;
+  } catch(err) {
+    out.innerHTML = `<div class="insight">⚠ Error: ${err.message}</div>`;
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// VARIANTS
+// ═══════════════════════════════════════════════════════
+async function generateVariants() {
+  const camp = document.getElementById('g-camp').value;
+  const product = document.getElementById('g-product').value || 'the product';
+  const audience = document.getElementById('g-audience').value || 'the audience';
+  const pain = document.getElementById('g-pain').value || 'pain point';
+  const cta = document.getElementById('g-cta').value || 'Download Now';
+  const dur = document.getElementById('g-dur').value;
+  const platform = document.getElementById('g-platform').value;
+
+  const out = document.getElementById('gen-output');
+  out.innerHTML = `<div class="loading"><div class="spin"></div>Generating 3 hook variants via Claude AI...</div>`;
+  document.getElementById('btn-gen').disabled = true;
+  document.getElementById('btn-var').disabled = true;
+
+  const system = `You are a performance marketing expert. Generate 3 distinctly different ad hook variants. Return valid JSON only:
+{"variants":[{"style":"Problem-First","hook":"..."},{"style":"Social Proof","hook":"..."},{"style":"Bold Claim","hook":"..."}]}`;
+  const prompt = `Write 3 different hook variants (first 3 seconds of a ${dur}s ${camp} ad) for:
+Product: ${product}
+Audience: ${audience}
+Pain: ${pain}
+Platform: ${platform}
+CTA: ${cta}
+
+Make each variant distinctly different in approach and emotional trigger. Max 2 sentences each. Be specific, not generic.`;
+
+  try {
+    const raw = await callClaude(prompt, system);
+    let data;
+    try { data = JSON.parse(raw); } catch(e) { const m = raw.match(/\{[\s\S]*?\}/); data = m ? JSON.parse(m[0]) : { variants: [] }; }
+    const variants = data.variants || [];
+    let html = `<div style="margin-top:16px;"><div style="font-size:11px;color:var(--ink3);margin-bottom:12px;">3 hook variants — rate each, then expand the winner into a full script.</div>`;
+    variants.forEach((v, i) => {
+      html += `<div class="variant-card">
+        <div class="variant-header"><span class="badge red">Variant ${i+1}</span><span class="badge gray">${v.style}</span></div>
+        <div class="variant-text">${v.hook}</div>
+        <div class="feedback-row" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border2);">
+          ${[1,2,3,4,5].map(n=>`<span class="star" onclick="rateVariantStar(this)">★</span>`).join('')}
+          <button class="btn ghost" style="margin-left:auto;font-size:11px;padding:5px 10px;" onclick="expandVariant(\`${v.hook.replace(/`/g,'\\`')}\`,\`${v.style}\`)">Expand into full script ↗</button>
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+    out.innerHTML = html;
+  } catch(err) {
+    out.innerHTML = `<div class="insight">⚠ Error: ${err.message}</div>`;
+  }
+  document.getElementById('btn-gen').disabled = false;
+  document.getElementById('btn-var').disabled = false;
+}
+
+function rateVariantStar(el) {
+  const bar = el.closest('.feedback-row');
+  const stars = bar.querySelectorAll('.star');
+  const n = Array.from(stars).indexOf(el) + 1;
+  stars.forEach((s, i) => s.classList.toggle('on', i < n));
+}
+
+async function expandVariant(hook, style) {
+  document.getElementById('g-hook').value = style.toLowerCase().replace(/[^a-z]+/g,'-').replace(/-$/,'');
+  document.getElementById('gen-output').innerHTML = `<div class="loading"><div class="spin"></div>Expanding hook into full script...</div>`;
+  document.getElementById('btn-gen').disabled = true;
+  const camp = document.getElementById('g-camp').value;
+  const dur = document.getElementById('g-dur').value;
+  const product = document.getElementById('g-product').value || 'the product';
+  const audience = document.getElementById('g-audience').value || 'the audience';
+  const pain = document.getElementById('g-pain').value || 'main pain point';
+  const cta = document.getElementById('g-cta').value || 'Download Now';
+  const tone = document.getElementById('g-tone').value;
+  const platform = document.getElementById('g-platform').value;
+
+  const system = `You are an expert performance marketing scriptwriter. Expand the given hook into a full ad script. Return valid JSON only:
+{"hook":"...","agitate":"...","solution":"...","proof":"...","cta":"...","hookLine":"..."}`;
+  const prompt = `Expand this hook into a full ${dur}s ${camp} ad script:
+Hook: "${hook}"
+Product: ${product}, Audience: ${audience}, Pain: ${pain}, Tone: ${tone}, Platform: ${platform}, CTA: ${cta}
+Keep the hook verbatim. Build the rest to match its energy and style.`;
+
+  try {
+    const raw = await callClaude(prompt, system);
+    let data;
+    try { data = JSON.parse(raw); } catch(e) { const m = raw.match(/\{[\s\S]*?\}/); data = m ? JSON.parse(m[0]) : { hook, agitate:'', solution:'', proof:'', cta, hookLine: hook.split('.')[0] }; }
+    const id = 'SCR-' + String(library.length + 1).padStart(3,'0');
+    const scriptObj = { id, camp, hook: style, tone, platform, dur, product, audience, pain, cta, sections: data, hookLine: data.hookLine || hook.split('.')[0], rating: 0, gold: false, ts: Date.now() };
+    document.getElementById('gen-output').innerHTML = renderScriptBox(scriptObj, true);
+    window._currentScript = scriptObj;
+  } catch(err) {
+    document.getElementById('gen-output').innerHTML = `<div class="insight">⚠ Error: ${err.message}</div>`;
+  }
+  document.getElementById('btn-gen').disabled = false;
+}
+
+// ═══════════════════════════════════════════════════════
+// HOOK GENERATOR
+// ═══════════════════════════════════════════════════════
+async function generateHooks() {
+  const product = document.getElementById('h-product').value || 'your product';
+  const pain = document.getElementById('h-pain').value || 'their pain';
+  const audience = document.getElementById('h-audience').value || 'your audience';
+  const out = document.getElementById('hook-output');
+  out.innerHTML = `<div class="loading"><div class="spin"></div>Generating 6 hooks via Claude AI...</div>`;
+
+  const system = `You are a performance marketing copywriter. Generate 6 distinct ad hooks. Return valid JSON only:
+{"hooks":[{"type":"Problem-First","text":"..."},{"type":"Curiosity Gap","text":"..."},{"type":"Bold Claim","text":"..."},{"type":"Social Proof","text":"..."},{"type":"Direct Question","text":"..."},{"type":"Before/After","text":"..."}]}`;
+  const prompt = `Generate 6 ad hooks (max 2 sentences each) for:
+Product: ${product}
+Core Pain: ${pain}
+Audience: ${audience}
+
+Make each hook distinctly different in emotional approach. Be specific and platform-native. Avoid generic language.`;
+
+  try {
+    const raw = await callClaude(prompt, system);
+    let data;
+    try { data = JSON.parse(raw); } catch(e) { const m = raw.match(/\{[\s\S]*?\}/); data = m ? JSON.parse(m[0]) : { hooks: [] }; }
+    out.innerHTML = `<div class="hook-grid">` + (data.hooks || []).map(h => `
+      <div class="hook-card" onclick="selectHook(this)">
+        <div class="hook-type">${h.type}</div>
+        <div class="hook-text">${h.text}</div>
+        <div style="margin-top:8px;display:flex;gap:6px;">
+          <button class="btn ghost" style="font-size:10px;padding:3px 8px;" onclick="copyText('${h.text.replace(/'/g,"\\'")}');event.stopPropagation();">Copy</button>
+          <button class="btn ghost" style="font-size:10px;padding:3px 8px;" onclick="addToSwipe('${h.type}','${h.text.replace(/'/g,"\\'")}');event.stopPropagation();">+ Swipe</button>
+        </div>
+      </div>`).join('') + `</div>`;
+  } catch(err) {
+    out.innerHTML = `<div class="insight">⚠ Error: ${err.message}</div>`;
+  }
+}
+
+function selectHook(el) {
+  document.querySelectorAll('.hook-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function addToSwipe(type, text) {
+  const list = document.getElementById('swipe-list');
+  const div = document.createElement('div');
+  div.className = 'swipe-item';
+  div.onclick = function() { copyText(this.querySelector('.swipe-text').textContent); };
+  div.innerHTML = `<div class="swipe-type">${type} · New</div><div class="swipe-text">${text}</div>`;
+  list.prepend(div);
+}
+
+// ═══════════════════════════════════════════════════════
+// LIBRARY
+// ═══════════════════════════════════════════════════════
+function renderLibrary(filter) {
+  const el = document.getElementById('lib-content');
+  if (!el) return;
+  let scripts = library;
+  if (filter === 'gold') scripts = library.filter(s => s.gold || s.rating >= 4);
+  else if (filter && filter !== 'all') scripts = library.filter(s => s.camp === filter);
+
+  if (!scripts.length) {
+    el.innerHTML = `<div class="empty">No scripts here yet.<br>${filter && filter !== 'all' ? 'Try a different filter.' : 'Generate scripts and click "Save to Library" to build your database.'}</div>`;
+    return;
+  }
+
+  const campColors = { performance:'gray', remarketing:'red', 'app-install':'purple', 'lead-gen':'green', brand:'green' };
+  el.innerHTML = `<table class="lib-table">
+    <thead><tr><th>ID</th><th>Script</th><th>Type</th><th>Hook Style</th><th>Rating</th><th>Status</th></tr></thead>
+    <tbody>${scripts.map(s => `<tr class="${s.gold||s.rating>=4?'gold-row':''}">
+      <td><span class="badge gray" style="font-size:10px;">${s.id}</span><div style="font-size:10px;color:var(--ink3);margin-top:3px;">${s.dur}s · ${s.platform}</div></td>
+      <td><div style="font-size:12px;font-weight:500;">${(s.product||'').slice(0,32)}</div><div class="script-preview">${(s.hookLine||'').slice(0,65)}${(s.hookLine||'').length>65?'...':''}</div></td>
+      <td><span class="badge ${campColors[s.camp]||'gray'}">${s.camp}</span></td>
+      <td><span style="font-size:11px;color:var(--ink2);">${s.hook}</span></td>
+      <td><div class="rdots">${[1,2,3,4,5].map(n=>`<div class="rdot ${n<=(s.rating||0)?'on':''}"></div>`).join('')}</div>${s.ctr?`<div style="font-size:10px;color:var(--green);margin-top:2px;">CTR ${s.ctr}%</div>`:''}</td>
+      <td>${s.gold||s.rating>=4?'<span class="badge gold">★ Gold</span>':'<span class="badge gray">Saved</span>'}</td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+}
+
+function filterLib(filter, btn) {
+  document.querySelectorAll('#panel-library .btn').forEach(b => { b.className = 'btn ghost'; b.style.cssText = 'font-size:11px;padding:6px 12px;'; });
+  btn.className = 'btn primary';
+  btn.style.cssText = 'font-size:11px;padding:6px 12px;';
+  renderLibrary(filter);
+}
+
+function clearLibrary() {
+  if (!confirm('Clear all saved scripts? This cannot be undone.')) return;
+  library = [];
+  saveLib();
+  renderLibrary();
+}
+
+// ═══════════════════════════════════════════════════════
+// PERFORMANCE FEEDBACK → LEARNING LOOP
+// ═══════════════════════════════════════════════════════
+async function addPerformance() {
+  const id = document.getElementById('perf-id').value.trim();
+  const ctr = document.getElementById('perf-ctr').value.trim();
+  const cvr = document.getElementById('perf-cvr').value.trim();
+  const roas = document.getElementById('perf-roas').value.trim();
+  const fb = document.getElementById('perf-feedback');
+
+  if (!id) { fb.innerHTML = '<span style="color:var(--accent);">⚠ Enter a Script ID first.</span>'; return; }
+  const s = library.find(x => x.id === id);
+  if (!s) { fb.innerHTML = `<span style="color:var(--accent);">⚠ Script "${id}" not found in Library. Save it first.</span>`; return; }
+
+  s.ctr = ctr; s.cvr = cvr; s.roas = roas;
+  if (parseFloat(ctr) > 4 || parseFloat(roas) > 2.5) { s.gold = true; }
+  saveLib(); renderLibrary();
+
+  fb.innerHTML = `<span class="spin" style="display:inline-block;margin-right:8px;"></span>Extracting learned rule from performance data...`;
+
+  const system = `You are a performance marketing expert. Extract one concise, actionable rule from this ad script's performance data. Max 25 words. Plain text only — no JSON, no preamble, no bullet.`;
+  const prompt = `Script: ${s.camp} campaign · "${s.hook}" hook · ${s.tone} tone · ${s.platform} · ${s.dur}s
+Performance: CTR ${ctr}% · CVR ${cvr}% · ROAS ${roas}
+Product: ${s.product}
+
+Extract one specific rule for future scripts. Be concrete about what worked.`;
+
+  try {
+    const rule = await callClaude(prompt, system);
+    const cleaned = rule.replace(/^[-•*"'\s]+|["\s]+$/g,'').trim();
+    learnedRules.unshift(cleaned);
+    if (learnedRules.length > 12) learnedRules.pop();
+    saveRules();
+
+    const rulesEl = document.getElementById('learned-rules');
+    const div = document.createElement('div');
+    div.className = 'rule';
+    div.innerHTML = `<span class="rule-icon">📈</span><div><strong>New rule:</strong> ${cleaned}</div>`;
+    rulesEl.prepend(div);
+
+    fb.innerHTML = `<span style="color:var(--green);">✓ Rule learned and added to generation context. ${s.gold?`"${id}" marked as Gold ★.`:''}`;
+    ['perf-id','perf-ctr','perf-cvr','perf-roas'].forEach(id => { document.getElementById(id).value = ''; });
+  } catch(err) {
+    fb.innerHTML = `<span style="color:var(--accent);">⚠ Saved performance data but couldn't extract rule: ${err.message}</span>`;
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════════════════
+function copyText(text) {
+  navigator.clipboard?.writeText(text).catch(() => {});
+  const el = document.createElement('div');
+  el.textContent = '✓ Copied';
+  el.style.cssText = 'position:fixed;bottom:20px;right:20px;background:var(--ink);color:#fff;padding:8px 16px;border-radius:8px;font-size:12px;z-index:999;font-family:DM Mono,monospace;';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1800);
+}
+
+function copyScript(id) {
+  const s = library.find(x => x.id === id) || window._currentScript;
+  if (!s) return;
+  const text = `SCRIPT: ${s.id} | ${s.camp} | ${s.dur}s | ${s.platform}\n\n` +
+    Object.entries(s.sections || {}).filter(([k]) => k !== 'hookLine')
+    .map(([k,v]) => `${k.toUpperCase()}:\n${v}`).join('\n\n');
+  copyText(text);
+}
+
+function exportData() {
+  const data = { library, learnedRules, exportedAt: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `scriptbot-export-${Date.now()}.json`;
+  a.click();
+}
+</script>
+</body>
+</html>
