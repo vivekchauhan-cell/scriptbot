@@ -298,6 +298,14 @@ body{font-family:'DM Mono',monospace;background:var(--paper);color:var(--ink);fo
         </select>
       </div>
       <div class="field">
+        <label>Language</label>
+        <select id="g-lang">
+          <option value="english" selected>English</option>
+          <option value="hindi">Hindi</option>
+          <option value="hinglish">Hinglish</option>
+        </select>
+      </div>
+      <div class="field">
         <label>USP / Key Benefit</label>
         <input type="text" id="g-usp" placeholder="e.g. Zero interest, 2-min approval" />
       </div>
@@ -342,6 +350,14 @@ body{font-family:'DM Mono',monospace;background:var(--paper);color:var(--ink);fo
         <div class="field"><label>Product</label><input type="text" id="h-product" placeholder="Your product or app" /></div>
         <div class="field"><label>Core Pain Point</label><input type="text" id="h-pain" placeholder="The #1 frustration of your audience" /></div>
         <div class="field"><label>Audience</label><input type="text" id="h-audience" placeholder="Who are they?" /></div>
+        <div class="field" style="max-width:120px;">
+          <label>Language</label>
+          <select id="h-lang">
+            <option value="english" selected>English</option>
+            <option value="hindi">Hindi</option>
+            <option value="hinglish">Hinglish</option>
+          </select>
+        </div>
       </div>
       <button class="btn primary" onclick="generateHooks()">⚡ Generate 6 Hooks</button>
       <div id="hook-output"></div>
@@ -693,11 +709,18 @@ async function generateScript() {
   const cta = document.getElementById('g-cta').value || 'Download Now';
   const tone = document.getElementById('g-tone').value;
   const platform = document.getElementById('g-platform').value;
+  const lang = document.getElementById('g-lang').value;
   const usp = document.getElementById('g-usp').value || '';
   const context = document.getElementById('g-context').value || '';
 
+  const langInstructions = {
+    english: 'Write entirely in clear, natural English.',
+    hindi: 'Write entirely in Hindi (Devanagari script). Every word must be in Hindi — no English words except brand names.',
+    hinglish: 'Write in Hinglish — a natural, conversational mix of Hindi and English the way urban Indians actually speak and text. Mix both languages freely within sentences (e.g. "Payday 10 din door hai aur account mein sirf ₹500? Bhai, we\'ve got you."). Keep it real and relatable, not translated.'
+  };
+
   const out = document.getElementById('gen-output');
-  out.innerHTML = `<div class="loading"><div class="spin"></div>Generating ${dur}s ${camp} script via Claude AI...</div>`;
+  out.innerHTML = `<div class="loading"><div class="spin"></div>Generating ${dur}s ${camp} script in ${lang} via Claude AI...</div>`;
   document.getElementById('btn-gen').disabled = true;
   document.getElementById('btn-var').disabled = true;
 
@@ -708,6 +731,8 @@ You write scripts that are:
 - Platform-native (understanding thumb-stop, skip behavior, etc.)
 - Conversion-focused with clear single CTAs
 - Authentic, not generic — specific details over vague claims
+
+LANGUAGE RULE: ${langInstructions[lang]}
 
 Always respond with valid JSON only. No markdown, no preamble, no explanation. Structure:
 {"hook":"...","agitate":"...","solution":"...","proof":"...","cta":"...","hookLine":"..."}
@@ -726,11 +751,12 @@ Core Pain Point: ${pain}
 Hook Style: ${hook}
 Tone: ${tone}
 Platform: ${platform}
+Language: ${lang} — ${langInstructions[lang]}
 Key CTA: ${cta}
 USP/Key Benefit: ${usp}
 ${learnedCtx}${pastCtx}
 
-Make it authentic, emotionally specific, and conversion-optimized. Avoid generic filler. Use real-sounding language for the audience. Keep each section tight and purposeful.`;
+Make it authentic, emotionally specific, and conversion-optimized. Avoid generic filler. Keep each section tight and purposeful.`;
 
   try {
     const raw = await callClaude(prompt, system);
@@ -742,7 +768,7 @@ Make it authentic, emotionally specific, and conversion-optimized. Avoid generic
       data = m ? JSON.parse(m[0]) : { hook: raw, agitate: '', solution: '', proof: '', cta: cta, hookLine: raw.split('.')[0] };
     }
     const id = 'SCR-' + String(library.length + 1).padStart(3, '0');
-    const scriptObj = { id, camp, hook, tone, platform, dur, product, audience, pain, cta, usp, sections: data, hookLine: data.hookLine || data.hook?.split('.')[0] || '', rating: 0, gold: false, ts: Date.now() };
+    const scriptObj = { id, camp, hook, tone, platform, lang, dur, product, audience, pain, cta, usp, sections: data, hookLine: data.hookLine || data.hook?.split('.')[0] || '', rating: 0, gold: false, ts: Date.now() };
     out.innerHTML = renderScriptBox(scriptObj, true);
     window._currentScript = scriptObj;
   } catch(err) {
@@ -773,6 +799,7 @@ function renderScriptBox(s, showActions) {
         <span class="badge gray">${s.hook}</span>
         <span class="badge gray">${s.dur}s</span>
         <span class="badge gray">${s.platform}</span>
+        ${s.lang ? `<span class="badge purple">${s.lang}</span>` : ''}
         ${s.gold ? '<span class="badge gold">★ Gold</span>' : ''}
       </div>
       <button class="copy-btn" onclick="copyScript('${s.id}')">copy all</button>
@@ -848,20 +875,28 @@ async function generateVariants() {
   const cta = document.getElementById('g-cta').value || 'Download Now';
   const dur = document.getElementById('g-dur').value;
   const platform = document.getElementById('g-platform').value;
+  const lang = document.getElementById('g-lang').value;
+
+  const langInstructions = {
+    english: 'Write entirely in clear, natural English.',
+    hindi: 'Write entirely in Hindi (Devanagari script). Every word must be in Hindi — no English words except brand names.',
+    hinglish: 'Write in Hinglish — a natural mix of Hindi and English the way urban Indians speak. Mix both languages freely within sentences.'
+  };
 
   const out = document.getElementById('gen-output');
-  out.innerHTML = `<div class="loading"><div class="spin"></div>Generating 3 hook variants via Claude AI...</div>`;
+  out.innerHTML = `<div class="loading"><div class="spin"></div>Generating 3 hook variants in ${lang} via Claude AI...</div>`;
   document.getElementById('btn-gen').disabled = true;
   document.getElementById('btn-var').disabled = true;
 
-  const system = `You are a performance marketing expert. Generate 3 distinctly different ad hook variants. Return valid JSON only:
+  const system = `You are a performance marketing expert. Generate 3 distinctly different ad hook variants. LANGUAGE RULE: ${langInstructions[lang]} Return valid JSON only:
 {"variants":[{"style":"Problem-First","hook":"..."},{"style":"Social Proof","hook":"..."},{"style":"Bold Claim","hook":"..."}]}`;
-  const prompt = `Write 3 different hook variants (first 3 seconds of a ${dur}s ${camp} ad) for:
+  const prompt = `Write 3 different hook variants (first 3 seconds of a ${dur}s ${camp} ad) in ${lang} for:
 Product: ${product}
 Audience: ${audience}
 Pain: ${pain}
 Platform: ${platform}
 CTA: ${cta}
+Language: ${lang} — ${langInstructions[lang]}
 
 Make each variant distinctly different in approach and emotional trigger. Max 2 sentences each. Be specific, not generic.`;
 
@@ -909,12 +944,20 @@ async function expandVariant(hook, style) {
   const cta = document.getElementById('g-cta').value || 'Download Now';
   const tone = document.getElementById('g-tone').value;
   const platform = document.getElementById('g-platform').value;
+  const lang = document.getElementById('g-lang').value;
 
-  const system = `You are an expert performance marketing scriptwriter. Expand the given hook into a full ad script. Return valid JSON only:
+  const langInstructions = {
+    english: 'Write entirely in clear, natural English.',
+    hindi: 'Write entirely in Hindi (Devanagari script). Every word must be in Hindi — no English words except brand names.',
+    hinglish: 'Write in Hinglish — a natural mix of Hindi and English the way urban Indians speak. Mix both languages freely within sentences.'
+  };
+
+  const system = `You are an expert performance marketing scriptwriter. Expand the given hook into a full ad script. LANGUAGE RULE: ${langInstructions[lang]} Return valid JSON only:
 {"hook":"...","agitate":"...","solution":"...","proof":"...","cta":"...","hookLine":"..."}`;
   const prompt = `Expand this hook into a full ${dur}s ${camp} ad script:
 Hook: "${hook}"
 Product: ${product}, Audience: ${audience}, Pain: ${pain}, Tone: ${tone}, Platform: ${platform}, CTA: ${cta}
+Language: ${lang} — ${langInstructions[lang]}
 Keep the hook verbatim. Build the rest to match its energy and style.`;
 
   try {
@@ -922,7 +965,7 @@ Keep the hook verbatim. Build the rest to match its energy and style.`;
     let data;
     try { data = JSON.parse(raw); } catch(e) { const m = raw.match(/\{[\s\S]*?\}/); data = m ? JSON.parse(m[0]) : { hook, agitate:'', solution:'', proof:'', cta, hookLine: hook.split('.')[0] }; }
     const id = 'SCR-' + String(library.length + 1).padStart(3,'0');
-    const scriptObj = { id, camp, hook: style, tone, platform, dur, product, audience, pain, cta, sections: data, hookLine: data.hookLine || hook.split('.')[0], rating: 0, gold: false, ts: Date.now() };
+    const scriptObj = { id, camp, hook: style, tone, platform, lang, dur, product, audience, pain, cta, sections: data, hookLine: data.hookLine || hook.split('.')[0], rating: 0, gold: false, ts: Date.now() };
     document.getElementById('gen-output').innerHTML = renderScriptBox(scriptObj, true);
     window._currentScript = scriptObj;
   } catch(err) {
@@ -938,15 +981,22 @@ async function generateHooks() {
   const product = document.getElementById('h-product').value || 'your product';
   const pain = document.getElementById('h-pain').value || 'their pain';
   const audience = document.getElementById('h-audience').value || 'your audience';
+  const lang = document.getElementById('h-lang').value;
+  const langInstructions = {
+    english: 'Write entirely in clear, natural English.',
+    hindi: 'Write entirely in Hindi (Devanagari script). Every word in Hindi — no English except brand names.',
+    hinglish: 'Write in Hinglish — a natural mix of Hindi and English the way urban Indians speak. Mix both freely within sentences.'
+  };
   const out = document.getElementById('hook-output');
-  out.innerHTML = `<div class="loading"><div class="spin"></div>Generating 6 hooks via Claude AI...</div>`;
+  out.innerHTML = `<div class="loading"><div class="spin"></div>Generating 6 hooks in ${lang} via Claude AI...</div>`;
 
-  const system = `You are a performance marketing copywriter. Generate 6 distinct ad hooks. Return valid JSON only:
+  const system = `You are a performance marketing copywriter. Generate 6 distinct ad hooks. LANGUAGE RULE: ${langInstructions[lang]} Return valid JSON only:
 {"hooks":[{"type":"Problem-First","text":"..."},{"type":"Curiosity Gap","text":"..."},{"type":"Bold Claim","text":"..."},{"type":"Social Proof","text":"..."},{"type":"Direct Question","text":"..."},{"type":"Before/After","text":"..."}]}`;
-  const prompt = `Generate 6 ad hooks (max 2 sentences each) for:
+  const prompt = `Generate 6 ad hooks (max 2 sentences each) in ${lang} for:
 Product: ${product}
 Core Pain: ${pain}
 Audience: ${audience}
+Language: ${lang} — ${langInstructions[lang]}
 
 Make each hook distinctly different in emotional approach. Be specific and platform-native. Avoid generic language.`;
 
