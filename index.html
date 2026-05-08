@@ -221,7 +221,7 @@ body{font-family:'DM Mono',monospace;background:var(--paper);color:var(--ink);fo
   <div class="panel-body">
     <div id="api-banner" class="api-banner">
       <div class="api-banner-text">⚠ <strong>API key required.</strong> Go to <b>Settings</b> to enter your Anthropic API key before generating scripts.</div>
-      <button class="btn" style="font-size:11px;padding:6px 12px;" onclick="nav('settings',document.querySelector('.nav-item:last-of-type'))">Open Settings</button>
+      <button class="btn" style="font-size:11px;padding:6px 12px;" onclick="nav('settings',null)">Open Settings</button>
     </div>
 
     <div class="form-row">
@@ -332,9 +332,9 @@ body{font-family:'DM Mono',monospace;background:var(--paper);color:var(--ink);fo
   </div>
   <div class="panel-body">
     <div class="tabs">
-      <div class="tab active" onclick="switchTab(event,'hpanels','hformulas')">Hook Formulas</div>
-      <div class="tab" onclick="switchTab(event,'hpanels','hgen')">AI Generator</div>
-      <div class="tab" onclick="switchTab(event,'hpanels','hswipe')">Swipe File</div>
+      <div class="tab active" onclick="switchTab(this,'hformulas')">Hook Formulas</div>
+      <div class="tab" onclick="switchTab(this,'hgen')">AI Generator</div>
+      <div class="tab" onclick="switchTab(this,'hswipe')">Swipe File</div>
     </div>
     <div id="hformulas" class="tab-panel active">
       <div class="formula-grid">
@@ -394,9 +394,9 @@ body{font-family:'DM Mono',monospace;background:var(--paper);color:var(--ink);fo
   </div>
   <div class="panel-body">
     <div class="tabs">
-      <div class="tab active" onclick="switchTab(event,'fpanels','fperf')">Performance</div>
-      <div class="tab" onclick="switchTab(event,'fpanels','fremark')">Remarketing</div>
-      <div class="tab" onclick="switchTab(event,'fpanels','fapp')">App Install</div>
+      <div class="tab active" onclick="switchTab(this,'fperf')">Performance</div>
+      <div class="tab" onclick="switchTab(this,'fremark')">Remarketing</div>
+      <div class="tab" onclick="switchTab(this,'fapp')">App Install</div>
     </div>
     <div id="fperf" class="tab-panel active">
       <div class="step"><div class="step-num">1</div><div><div class="step-title">Hook 0–3s — Stop the Scroll</div><div class="step-desc">Lead with the pain point or bold claim. No brand logo yet. Visual-first: show the problem happening. Pattern interrupt is the only goal here.</div></div></div>
@@ -593,17 +593,25 @@ window.addEventListener('DOMContentLoaded', () => {
 function nav(id, el) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('panel-'+id).classList.add('active');
+  const panel = document.getElementById('panel-' + id);
+  if (panel) panel.classList.add('active');
   if (el) el.classList.add('active');
   if (id === 'library') renderLibrary();
 }
 
-function switchTab(e, groupClass, targetId) {
-  const container = e.currentTarget.closest('.panel-body');
-  container.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  container.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  e.currentTarget.classList.add('active');
-  document.getElementById(targetId).classList.add('active');
+function switchTab(el, targetId) {
+  // Walk up to find the tabs container (.tabs) then the sibling tab-panels
+  const tabsContainer = el.closest('.tabs');
+  const panelBody = el.closest('.panel-body') || el.closest('.panel');
+  if (tabsContainer) {
+    tabsContainer.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+  }
+  if (panelBody) {
+    panelBody.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  }
+  const target = document.getElementById(targetId);
+  if (target) target.classList.add('active');
 }
 
 // ═══════════════════════════════════════════════════════
